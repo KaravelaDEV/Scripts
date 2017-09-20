@@ -1,0 +1,36 @@
+#!/bin/bash
+
+device=$1
+folder=$2
+
+if [ -z "$device" ]; then
+    echo "Inform the device."
+    exit 1
+fi
+
+if [ -z "$folder" ]; then
+    echo "Inform the folder."
+    exit 1
+fi
+
+echo "Formatng disk..."
+sudo mkfs.ext4 -m 0 -F -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/$device
+
+echo "Creating folder..."
+sudo mkdir -p /mnt/disks/$folder
+
+echo "Mounting disk..."
+sudo mount -o discard,defaults /dev/$device /mnt/disks/$folder
+
+echo "Changin folder permission..."
+sudo chmod a+w /mnt/disks/$folder
+
+echo "Backuping fstab file..."
+sudo cp /etc/fstab /etc/fstab.backup
+
+echo "Updating fstab file..."
+echo UUID=`sudo blkid -s UUID -o value /dev/$device` /mnt/disks/$folder ext4 discard,defaults,nofail 0 2 | sudo tee -a /etc/fstab > /dev/null
+
+echo "Showing fstab content..."
+cat /etc/fstab
+

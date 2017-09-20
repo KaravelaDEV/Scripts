@@ -1,0 +1,36 @@
+#!/bin/bash
+
+data_folder=$1
+
+if [ -z "$data_folder" ]; then
+    echo "Inform the target data folder path."
+    exit 1
+fi
+
+if [ ! -d "/var/lib/mysql" ]; then
+    echo "Source data folder does not exist."
+    exit 1
+fi
+
+if [ ! -d "$data_folder" ]; then
+    echo "Target data folder does not exist."
+    exit 1
+fi
+
+sudo systemctl stop mysql
+sudo systemctl status mysql
+
+echo "Copying mysql data folder..."
+sudo rsync -av /var/lib/mysql/ $data_folder
+sudo replace "/var/lib/mysql" $data_folder -- /etc/mysql/mysql.conf.d/mysq ld.cnf
+
+sudo mv /var/lib/mysql /var/lib/mysql.bak
+sudo rm -Rf /var/lib/mysql.bak
+sudo mkdir /var/lib/mysql/mysql -p
+
+echo "alias /var/lib/mysql/ -> $data_folder/," | sudo tee -a /etc/apparmor.d/tunables/alias > /dev/null
+sudo systemctl restart apparmor
+
+sudo systemctl start mysql
+sudo systemctl status mysql
+
