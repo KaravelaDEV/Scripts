@@ -22,11 +22,11 @@ sudo systemctl status mysql
 
 echo "Copying mysql data folder..."
 sudo rsync -av /var/lib/mysql/ $data_folder
-sudo replace "/var/lib/mysql" $data_folder -- /etc/mysql/mysql.conf.d/mysq ld.cnf
+sudo replace "/var/lib/mysql" $data_folder -- /etc/mysql/mysql.conf.d/mysqld.cnf
 
 sudo mv /var/lib/mysql /var/lib/mysql.bak
-sudo rm -Rf /var/lib/mysql.bak
-sudo mkdir /var/lib/mysql/mysql -p
+#sudo rm -Rf /var/lib/mysql.bak
+sudo mkdir /var/lib/mysql -p
 
 echo "alias /var/lib/mysql/ -> $data_folder/," | sudo tee -a /etc/apparmor.d/tunables/alias > /dev/null
 sudo systemctl restart apparmor
